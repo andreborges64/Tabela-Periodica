@@ -1,1 +1,2824 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#07130e">
+<title>Laboratório da Tabela Periódica</title>
 
+<style>
+:root{
+  --bg:#07130e;
+  --bg2:#0b1d14;
+  --panel:#0d2118;
+  --panel2:#11291f;
+  --border:#234936;
+  --text:#eef8f1;
+  --muted:#91aa9b;
+  --accent:#52d273;
+  --accent2:#2cae59;
+  --danger:#ff5f6d;
+  --warning:#f4c95d;
+  --info:#59b9ff;
+  --shadow:0 12px 35px rgba(0,0,0,.28);
+}
+
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html,
+body{
+  width:100%;
+  height:100%;
+  margin:0;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at top left,#123522 0,transparent 38%),
+    radial-gradient(circle at bottom right,#10291c 0,transparent 35%),
+    var(--bg);
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+  user-select:none;
+}
+
+button,
+input,
+select{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+.app{
+  width:100%;
+  height:100dvh;
+  display:flex;
+  flex-direction:column;
+  padding:
+    max(7px,env(safe-area-inset-top))
+    max(7px,env(safe-area-inset-right))
+    max(4px,env(safe-area-inset-bottom))
+    max(7px,env(safe-area-inset-left));
+  gap:7px;
+}
+
+/* CABEÇALHO */
+
+header{
+  flex:0 0 auto;
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:7px 10px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:rgba(13,33,24,.88);
+  box-shadow:var(--shadow);
+}
+
+.brand{
+  min-width:0;
+}
+
+.brand h1{
+  margin:0;
+  font-size:clamp(15px,2vw,23px);
+  line-height:1.05;
+}
+
+.brand p{
+  margin:3px 0 0;
+  color:var(--muted);
+  font-size:clamp(8px,1vw,12px);
+}
+
+.header-actions{
+  display:flex;
+  gap:5px;
+  flex-shrink:0;
+}
+
+.small-btn{
+  border:1px solid var(--border);
+  background:#122c20;
+  color:var(--text);
+  border-radius:8px;
+  padding:6px 8px;
+  font-size:11px;
+}
+
+.small-btn:hover{
+  border-color:var(--accent);
+}
+
+/* ÁREA PRINCIPAL */
+
+.main{
+  flex:1 1 auto;
+  min-height:0;
+  display:grid;
+  grid-template-columns:minmax(0,1.65fr) minmax(270px,.85fr);
+  gap:7px;
+}
+
+/* TABELA */
+
+.table-panel{
+  min-width:0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:rgba(8,25,17,.84);
+  padding:7px;
+  box-shadow:var(--shadow);
+}
+
+.toolbar{
+  flex:0 0 auto;
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.search{
+  flex:1 1 150px;
+  min-width:100px;
+  border:1px solid var(--border);
+  background:#091a11;
+  color:var(--text);
+  border-radius:8px;
+  padding:7px 9px;
+  outline:none;
+}
+
+.search:focus{
+  border-color:var(--accent);
+}
+
+.filter{
+  border:1px solid var(--border);
+  background:#10271c;
+  color:var(--text);
+  border-radius:8px;
+  padding:7px 8px;
+  font-size:11px;
+}
+
+.legend{
+  flex:0 0 auto;
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap;
+  color:var(--muted);
+  font-size:8px;
+}
+
+.legend span{
+  display:flex;
+  align-items:center;
+  gap:3px;
+}
+
+.dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  display:inline-block;
+}
+
+/* Container query para tornar os símbolos proporcionais à tabela */
+.periodic-wrap{
+  flex:1 1 auto;
+  min-height:0;
+  min-width:0;
+  overflow:hidden;
+  container-type:inline-size;
+}
+
+.periodic{
+  width:100%;
+  height:100%;
+  display:grid;
+  grid-template-columns:repeat(18,minmax(0,1fr));
+  grid-template-rows:repeat(10,minmax(0,1fr));
+  gap:2px;
+  min-width:0;
+  min-height:0;
+}
+
+.element{
+  position:relative;
+  min-width:0;
+  min-height:0;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:4px;
+  background:#12281d;
+  color:var(--text);
+  padding:1px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  transition:.12s;
+}
+
+.element:hover{
+  transform:translateY(-1px);
+  border-color:var(--accent);
+  z-index:2;
+}
+
+.element.hidden{
+  visibility:hidden;
+  pointer-events:none;
+}
+
+.element.dim{
+  opacity:.12;
+}
+
+.element.selected{
+  border:2px solid var(--accent);
+  box-shadow:0 0 0 1px rgba(82,210,115,.18);
+}
+
+.element .number{
+  position:absolute;
+  top:1px;
+  left:2px;
+  font-size:clamp(5px,1.25cqw,10px);
+  opacity:.65;
+  line-height:1;
+}
+
+.element .symbol{
+  font-size:clamp(7px,4.5cqw,22px);
+  font-weight:800;
+  line-height:.95;
+  letter-spacing:-.04em;
+}
+
+.element .name{
+  width:100%;
+  text-align:center;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:clamp(4px,1.65cqw,10px);
+  opacity:.78;
+  line-height:1;
+  margin-top:2px;
+}
+
+.element .qty{
+  position:absolute;
+  bottom:1px;
+  right:2px;
+  font-size:clamp(5px,1.2cqw,9px);
+  color:var(--accent);
+  font-weight:bold;
+}
+
+.cat-alkali{background:#49251d}
+.cat-alkaline{background:#49391b}
+.cat-transition{background:#163d36}
+.cat-post{background:#293b2a}
+.cat-metalloid{background:#2c3d26}
+.cat-nonmetal{background:#183d2c}
+.cat-halogen{background:#273b50}
+.cat-noble{background:#3a2e4a}
+.cat-lanthanide{background:#3b2940}
+.cat-actinide{background:#41282f}
+.cat-unknown{background:#2a2a2a}
+
+/* PAINEL DIREITO */
+
+.info-panel{
+  min-width:0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:rgba(13,33,24,.9);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+
+.tabs{
+  flex:0 0 auto;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  border-bottom:1px solid var(--border);
+}
+
+.tab{
+  border:0;
+  border-right:1px solid var(--border);
+  background:#0d2118;
+  color:var(--muted);
+  padding:8px 3px;
+  font-size:10px;
+}
+
+.tab:last-child{
+  border-right:0;
+}
+
+.tab.active{
+  color:var(--text);
+  background:#163625;
+  box-shadow:inset 0 -2px 0 var(--accent);
+}
+
+/*
+  Apenas o conteúdo do painel pode rolar.
+  A barra fica totalmente invisível.
+*/
+.tab-content{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+  padding:9px;
+}
+
+.tab-content::-webkit-scrollbar{
+  width:0;
+  height:0;
+  display:none;
+}
+
+/* CONTEÚDO */
+
+.empty{
+  min-height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color:var(--muted);
+  gap:6px;
+  padding:15px;
+}
+
+.empty-icon{
+  font-size:30px;
+  opacity:.6;
+}
+
+.section{
+  border:1px solid var(--border);
+  border-radius:9px;
+  background:rgba(10,28,19,.72);
+  padding:8px;
+  margin-bottom:7px;
+}
+
+.section:last-child{
+  margin-bottom:0;
+}
+
+.section-title{
+  margin:0 0 6px;
+  color:var(--accent);
+  font-size:11px;
+  font-weight:bold;
+}
+
+.element-header{
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+
+.big-symbol{
+  width:52px;
+  height:52px;
+  flex:0 0 52px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid var(--accent);
+  border-radius:10px;
+  background:#10291c;
+  color:var(--accent);
+  font-size:25px;
+  font-weight:800;
+}
+
+.element-title{
+  min-width:0;
+}
+
+.element-title h2{
+  margin:0;
+  font-size:17px;
+}
+
+.element-title p{
+  margin:3px 0 0;
+  color:var(--muted);
+  font-size:10px;
+}
+
+.info-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:5px;
+}
+
+.info-item{
+  min-width:0;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:6px;
+  padding:5px;
+  background:#0c2016;
+}
+
+.info-item .label{
+  color:var(--muted);
+  font-size:8px;
+}
+
+.info-item .value{
+  margin-top:2px;
+  font-size:10px;
+  overflow-wrap:anywhere;
+}
+
+/* LABORATÓRIO */
+
+.lab-list{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+
+.lab-row{
+  display:grid;
+  grid-template-columns:35px minmax(0,1fr) auto;
+  align-items:center;
+  gap:6px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:5px;
+  background:#0b1e14;
+}
+
+.lab-symbol{
+  font-size:16px;
+  font-weight:bold;
+  text-align:center;
+  color:var(--accent);
+}
+
+.lab-info{
+  min-width:0;
+}
+
+.lab-info strong{
+  display:block;
+  font-size:10px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.lab-info span{
+  display:block;
+  font-size:8px;
+  color:var(--muted);
+}
+
+.qty-control{
+  display:flex;
+  align-items:center;
+  gap:3px;
+}
+
+.qty-control button{
+  width:23px;
+  height:23px;
+  padding:0;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:#142e21;
+  color:var(--text);
+}
+
+.qty-control output{
+  min-width:20px;
+  text-align:center;
+  font-size:10px;
+  font-weight:bold;
+}
+
+.formula-box{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:55px;
+  border:1px solid var(--border);
+  border-radius:9px;
+  background:#091a11;
+  color:var(--accent);
+  font-size:25px;
+  font-weight:bold;
+  letter-spacing:.04em;
+  padding:8px;
+  text-align:center;
+  overflow-wrap:anywhere;
+}
+
+.chemical-name{
+  margin-top:6px;
+  padding:7px;
+  border-radius:7px;
+  background:#12291c;
+  border:1px solid #285b3b;
+  text-align:center;
+}
+
+.chemical-name .small{
+  color:var(--muted);
+  font-size:8px;
+  display:block;
+  margin-bottom:2px;
+}
+
+.chemical-name strong{
+  font-size:12px;
+  color:var(--text);
+}
+
+.action-row{
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap;
+}
+
+.action{
+  flex:1 1 100px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:7px;
+  background:#12301f;
+  color:var(--text);
+  font-size:10px;
+}
+
+.action.primary{
+  background:#1a5b30;
+  border-color:#2f8b4b;
+}
+
+.action:hover{
+  border-color:var(--accent);
+}
+
+.result{
+  font-size:10px;
+  line-height:1.45;
+  color:#dcebe1;
+}
+
+.result strong{
+  color:var(--accent);
+}
+
+.result .good{
+  color:var(--accent);
+}
+
+.result .warn{
+  color:var(--warning);
+}
+
+.result .bad{
+  color:var(--danger);
+}
+
+.result .info{
+  color:var(--info);
+}
+
+.mono{
+  font-family:Consolas,Monaco,monospace;
+}
+
+/* LEWIS */
+
+.lewis{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100px;
+  overflow:auto;
+  padding:8px;
+}
+
+.lewis-atom{
+  position:relative;
+  width:70px;
+  height:70px;
+  border:1px solid var(--accent);
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--accent);
+  font-weight:bold;
+  font-size:18px;
+  background:#10291c;
+}
+
+.electron{
+  position:absolute;
+  font-size:12px;
+  color:#fff;
+}
+
+.e-top{top:-3px}
+.e-right{right:-3px}
+.e-bottom{bottom:-3px}
+.e-left{left:-3px}
+
+/* DESAFIOS */
+
+.challenge{
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:7px;
+  margin-bottom:5px;
+  background:#0b1e14;
+}
+
+.challenge:last-child{
+  margin-bottom:0;
+}
+
+.challenge-head{
+  display:flex;
+  justify-content:space-between;
+  gap:5px;
+  align-items:center;
+}
+
+.challenge strong{
+  font-size:10px;
+}
+
+.challenge small{
+  color:var(--muted);
+  font-size:8px;
+}
+
+.challenge button{
+  margin-top:5px;
+  width:100%;
+  border:1px solid var(--border);
+  background:#143321;
+  color:var(--text);
+  border-radius:6px;
+  padding:6px;
+  font-size:9px;
+}
+
+/* MODAL */
+
+.modal{
+  position:fixed;
+  inset:0;
+  z-index:50;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:15px;
+  background:rgba(0,0,0,.68);
+}
+
+.modal.show{
+  display:flex;
+}
+
+.modal-box{
+  width:min(500px,100%);
+  max-height:min(80dvh,600px);
+  overflow:auto;
+  scrollbar-width:none;
+  background:#0d2118;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+
+.modal-box::-webkit-scrollbar{
+  width:0;
+}
+
+.modal-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:9px;
+}
+
+.modal-head h3{
+  margin:0;
+  font-size:14px;
+}
+
+.close{
+  border:1px solid var(--border);
+  background:#132b20;
+  color:var(--text);
+  width:28px;
+  height:28px;
+  border-radius:7px;
+}
+
+/* FOOTER */
+
+footer{
+  flex:0 0 auto;
+  text-align:center;
+  color:red;
+  font-weight:bold;
+  font-size:9px;
+  background:transparent;
+  user-select:none;
+  pointer-events:none;
+  padding:1px;
+}
+
+/* MOBILE */
+
+@media(max-width:850px){
+  .main{
+    grid-template-columns:minmax(0,1.45fr) minmax(210px,.85fr);
+  }
+
+  .tab{
+    font-size:9px;
+    padding:7px 2px;
+  }
+
+  .tab-content{
+    padding:7px;
+  }
+
+  .section{
+    padding:7px;
+  }
+}
+
+@media(max-width:650px){
+  .app{
+    gap:5px;
+  }
+
+  header{
+    min-height:37px;
+    padding:6px 8px;
+  }
+
+  .brand h1{
+    font-size:14px;
+  }
+
+  .brand p{
+    display:none;
+  }
+
+  .header-actions{
+    display:none;
+  }
+
+  .main{
+    grid-template-columns:minmax(0,1fr) minmax(145px,.72fr);
+    gap:5px;
+  }
+
+  .table-panel{
+    padding:5px;
+    gap:4px;
+  }
+
+  .legend{
+    display:none;
+  }
+
+  .toolbar{
+    gap:3px;
+  }
+
+  .search{
+    padding:5px 6px;
+    font-size:10px;
+  }
+
+  .filter{
+    padding:5px 5px;
+    font-size:9px;
+  }
+
+  .element{
+    border-radius:3px;
+  }
+
+  .element .name{
+    display:none;
+  }
+
+  .element .symbol{
+    font-size:clamp(7px,4.6cqw,19px);
+  }
+
+  .info-panel{
+    border-radius:9px;
+  }
+
+  .tabs{
+    grid-template-columns:repeat(4,1fr);
+  }
+
+  .tab{
+    font-size:7px;
+    padding:6px 1px;
+  }
+
+  .tab-content{
+    padding:5px;
+  }
+
+  .big-symbol{
+    width:40px;
+    height:40px;
+    flex-basis:40px;
+    font-size:19px;
+  }
+
+  .element-title h2{
+    font-size:12px;
+  }
+
+  .element-title p{
+    font-size:8px;
+  }
+
+  .info-grid{
+    grid-template-columns:1fr;
+  }
+
+  .info-item{
+    padding:4px;
+  }
+
+  .info-item .label{
+    font-size:7px;
+  }
+
+  .info-item .value{
+    font-size:8px;
+  }
+
+  .formula-box{
+    min-height:42px;
+    font-size:17px;
+  }
+
+  .chemical-name{
+    padding:5px;
+  }
+
+  .chemical-name strong{
+    font-size:9px;
+  }
+
+  .chemical-name .small{
+    font-size:7px;
+  }
+
+  .action{
+    font-size:8px;
+    padding:6px 3px;
+  }
+
+  .lab-row{
+    grid-template-columns:26px minmax(0,1fr);
+  }
+
+  .qty-control{
+    grid-column:2;
+    justify-content:flex-end;
+  }
+
+  footer{
+    font-size:7px;
+  }
+}
+
+@media(max-width:430px){
+  .main{
+    grid-template-columns:minmax(0,1.3fr) minmax(128px,.7fr);
+  }
+
+  .table-panel{
+    padding:3px;
+  }
+
+  .periodic{
+    gap:1px;
+  }
+
+  .element .number{
+    display:none;
+  }
+
+  .info-panel{
+    min-width:0;
+  }
+
+  .section-title{
+    font-size:9px;
+  }
+
+  .element-title h2{
+    font-size:10px;
+  }
+
+  .element-title p{
+    font-size:7px;
+  }
+
+  .big-symbol{
+    width:34px;
+    height:34px;
+    flex-basis:34px;
+    font-size:16px;
+  }
+
+  .formula-box{
+    font-size:15px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+  <div class="brand">
+    <h1>⚗ Laboratório da Tabela Periódica</h1>
+    <p>Explore elementos, monte fórmulas e analise possíveis combinações químicas.</p>
+  </div>
+
+  <div class="header-actions">
+    <button class="small-btn" id="randomBtn">🎲 Aleatório</button>
+    <button class="small-btn" id="clearBtn">Limpar laboratório</button>
+  </div>
+</header>
+
+<main class="main">
+
+  <section class="table-panel">
+
+    <div class="toolbar">
+      <input
+        id="search"
+        class="search"
+        type="search"
+        placeholder="Pesquisar elemento..."
+        autocomplete="off"
+      >
+
+      <select id="filter" class="filter">
+        <option value="all">Todos</option>
+        <option value="metal">Metais</option>
+        <option value="nonmetal">Não metais</option>
+        <option value="noble">Gases nobres</option>
+        <option value="halogen">Halogênios</option>
+      </select>
+    </div>
+
+    <div class="legend">
+      <span><i class="dot" style="background:#49251d"></i>Alcalinos</span>
+      <span><i class="dot" style="background:#49391b"></i>Alcalino-terrosos</span>
+      <span><i class="dot" style="background:#163d36"></i>Transição</span>
+      <span><i class="dot" style="background:#183d2c"></i>Não metais</span>
+      <span><i class="dot" style="background:#273b50"></i>Halogênios</span>
+      <span><i class="dot" style="background:#3a2e4a"></i>Gases nobres</span>
+    </div>
+
+    <div class="periodic-wrap">
+      <div id="periodic" class="periodic"></div>
+    </div>
+
+  </section>
+
+  <aside class="info-panel">
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="element">Elemento</button>
+      <button class="tab" data-tab="lab">Laboratório</button>
+      <button class="tab" data-tab="analysis">Análise</button>
+      <button class="tab" data-tab="challenges">Desafios</button>
+    </nav>
+
+    <div id="tabContent" class="tab-content"></div>
+
+  </aside>
+
+</main>
+
+<footer>
+  © 2026 André Luiz Silva Dias Borges. Todos os direitos reservados.
+</footer>
+
+</div>
+
+<div id="modal" class="modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modalTitle">Informação</h3>
+      <button class="close" id="modalClose">×</button>
+    </div>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   NOMES DOS ELEMENTOS EM PORTUGUÊS
+========================================================= */
+
+const PT_NAMES = {
+  H:"Hidrogênio",
+  He:"Hélio",
+  Li:"Lítio",
+  Be:"Berílio",
+  B:"Boro",
+  C:"Carbono",
+  N:"Nitrogênio",
+  O:"Oxigênio",
+  F:"Flúor",
+  Ne:"Neônio",
+  Na:"Sódio",
+  Mg:"Magnésio",
+  Al:"Alumínio",
+  Si:"Silício",
+  P:"Fósforo",
+  S:"Enxofre",
+  Cl:"Cloro",
+  Ar:"Argônio",
+  K:"Potássio",
+  Ca:"Cálcio",
+  Sc:"Escândio",
+  Ti:"Titânio",
+  V:"Vanádio",
+  Cr:"Cromo",
+  Mn:"Manganês",
+  Fe:"Ferro",
+  Co:"Cobalto",
+  Ni:"Níquel",
+  Cu:"Cobre",
+  Zn:"Zinco",
+  Ga:"Gálio",
+  Ge:"Germânio",
+  As:"Arsênio",
+  Se:"Selênio",
+  Br:"Bromo",
+  Kr:"Criptônio",
+  Rb:"Rubídio",
+  Sr:"Estrôncio",
+  Y:"Ítrio",
+  Zr:"Zircônio",
+  Nb:"Nióbio",
+  Mo:"Molibdênio",
+  Tc:"Tecnécio",
+  Ru:"Rutênio",
+  Rh:"Ródio",
+  Pd:"Paládio",
+  Ag:"Prata",
+  Cd:"Cádmio",
+  In:"Índio",
+  Sn:"Estanho",
+  Sb:"Antimônio",
+  Te:"Telúrio",
+  I:"Iodo",
+  Xe:"Xenônio",
+  Cs:"Césio",
+  Ba:"Bário",
+  La:"Lantânio",
+  Ce:"Cério",
+  Pr:"Praseodímio",
+  Nd:"Neodímio",
+  Pm:"Promécio",
+  Sm:"Samário",
+  Eu:"Európio",
+  Gd:"Gadolínio",
+  Tb:"Térbio",
+  Dy:"Disprósio",
+  Ho:"Hólmio",
+  Er:"Érbio",
+  Tm:"Túlio",
+  Yb:"Itérbio",
+  Lu:"Lutécio",
+  Hf:"Háfnio",
+  Ta:"Tântalo",
+  W:"Tungstênio",
+  Re:"Rênio",
+  Os:"Ósmio",
+  Ir:"Irídio",
+  Pt:"Platina",
+  Au:"Ouro",
+  Hg:"Mercúrio",
+  Tl:"Tálio",
+  Pb:"Chumbo",
+  Bi:"Bismuto",
+  Po:"Polônio",
+  At:"Astato",
+  Rn:"Radônio",
+  Fr:"Frâncio",
+  Ra:"Rádio",
+  Ac:"Actínio",
+  Th:"Tório",
+  Pa:"Protactínio",
+  U:"Urânio",
+  Np:"Netúnio",
+  Pu:"Plutônio",
+  Am:"Amerício",
+  Cm:"Cúrio",
+  Bk:"Berquélio",
+  Cf:"Califórnio",
+  Es:"Einstênio",
+  Fm:"Férmio",
+  Md:"Mendelévio",
+  No:"Nobélio",
+  Lr:"Laurêncio",
+  Rf:"Rutherfórdio",
+  Db:"Dúbnio",
+  Sg:"Seabórgio",
+  Bh:"Bóhrio",
+  Hs:"Hássio",
+  Mt:"Meitnério",
+  Ds:"Darmstádtio",
+  Rg:"Roentgênio",
+  Cn:"Copernício",
+  Nh:"Nihônio",
+  Fl:"Fleróvio",
+  Mc:"Moscóvio",
+  Lv:"Livermório",
+  Ts:"Tenessino",
+  Og:"Oganessônio"
+};
+
+/* =========================================================
+   DADOS BASE
+========================================================= */
+
+const ELEMENTS = [
+  [1,"H",1,1,"nonmetal",2.20,1.008],
+  [2,"He",18,1,"noble",0,4.0026],
+  [3,"Li",1,2,"alkali",0.98,6.94],
+  [4,"Be",2,2,"alkaline",1.57,9.0122],
+  [5,"B",13,2,"metalloid",2.04,10.81],
+  [6,"C",14,2,"nonmetal",2.55,12.011],
+  [7,"N",15,2,"nonmetal",3.04,14.007],
+  [8,"O",16,2,"nonmetal",3.44,15.999],
+  [9,"F",17,2,"halogen",3.98,18.998],
+  [10,"Ne",18,2,"noble",0,20.180],
+  [11,"Na",1,3,"alkali",0.93,22.990],
+  [12,"Mg",2,3,"alkaline",1.31,24.305],
+  [13,"Al",13,3,"post",1.61,26.982],
+  [14,"Si",14,3,"metalloid",1.90,28.085],
+  [15,"P",15,3,"nonmetal",2.19,30.974],
+  [16,"S",16,3,"nonmetal",2.58,32.06],
+  [17,"Cl",17,3,"halogen",3.16,35.45],
+  [18,"Ar",18,3,"noble",0,39.948],
+  [19,"K",1,4,"alkali",0.82,39.098],
+  [20,"Ca",2,4,"alkaline",1.00,40.078],
+  [21,"Sc",3,4,"transition",1.36,44.956],
+  [22,"Ti",4,4,"transition",1.54,47.867],
+  [23,"V",5,4,"transition",1.63,50.942],
+  [24,"Cr",6,4,"transition",1.66,51.996],
+  [25,"Mn",7,4,"transition",1.55,54.938],
+  [26,"Fe",8,4,"transition",1.83,55.845],
+  [27,"Co",9,4,"transition",1.88,58.933],
+  [28,"Ni",10,4,"transition",1.91,58.693],
+  [29,"Cu",11,4,"transition",1.90,63.546],
+  [30,"Zn",12,4,"transition",2.65,65.38],
+  [31,"Ga",13,4,"post",1.81,69.723],
+  [32,"Ge",14,4,"metalloid",2.01,72.630],
+  [33,"As",15,4,"metalloid",2.18,74.922],
+  [34,"Se",16,4,"nonmetal",2.55,78.971],
+  [35,"Br",17,4,"halogen",2.96,79.904],
+  [36,"Kr",18,4,"noble",0,83.798],
+  [37,"Rb",1,5,"alkali",0.82,85.468],
+  [38,"Sr",2,5,"alkaline",0.95,87.62],
+  [39,"Y",3,5,"transition",1.22,88.906],
+  [40,"Zr",4,5,"transition",1.33,91.224],
+  [41,"Nb",5,5,"transition",1.60,92.906],
+  [42,"Mo",6,5,"transition",2.16,95.95],
+  [43,"Tc",7,5,"transition",1.90,98],
+  [44,"Ru",8,5,"transition",2.20,101.07],
+  [45,"Rh",9,5,"transition",2.28,102.91],
+  [46,"Pd",10,5,"transition",2.20,106.42],
+  [47,"Ag",11,5,"transition",1.93,107.87],
+  [48,"Cd",12,5,"transition",1.69,112.41],
+  [49,"In",13,5,"post",1.78,114.82],
+  [50,"Sn",14,5,"post",1.96,118.71],
+  [51,"Sb",15,5,"metalloid",2.05,121.76],
+  [52,"Te",16,5,"metalloid",2.10,127.60],
+  [53,"I",17,5,"halogen",2.66,126.90],
+  [54,"Xe",18,5,"noble",0,131.29],
+  [55,"Cs",1,6,"alkali",0.79,132.91],
+  [56,"Ba",2,6,"alkaline",0.89,137.33],
+  [57,"La",3,6,"lanthanide",1.10,138.91],
+  [58,"Ce",4,6,"lanthanide",1.12,140.12],
+  [59,"Pr",5,6,"lanthanide",1.13,140.91],
+  [60,"Nd",6,6,"lanthanide",1.14,144.24],
+  [61,"Pm",7,6,"lanthanide",1.13,145],
+  [62,"Sm",8,6,"lanthanide",1.17,150.36],
+  [63,"Eu",9,6,"lanthanide",1.20,151.96],
+  [64,"Gd",10,6,"lanthanide",1.20,157.25],
+  [65,"Tb",11,6,"lanthanide",1.10,158.93],
+  [66,"Dy",12,6,"lanthanide",1.22,162.50],
+  [67,"Ho",13,6,"lanthanide",1.23,164.93],
+  [68,"Er",14,6,"lanthanide",1.24,167.26],
+  [69,"Tm",15,6,"lanthanide",1.25,168.93],
+  [70,"Yb",16,6,"lanthanide",1.10,173.05],
+  [71,"Lu",17,6,"lanthanide",1.27,174.97],
+  [72,"Hf",4,6,"transition",1.30,178.49],
+  [73,"Ta",5,6,"transition",1.50,180.95],
+  [74,"W",6,6,"transition",2.36,183.84],
+  [75,"Re",7,6,"transition",1.90,186.21],
+  [76,"Os",8,6,"transition",2.20,190.23],
+  [77,"Ir",9,6,"transition",2.20,192.22],
+  [78,"Pt",10,6,"transition",2.28,195.08],
+  [79,"Au",11,6,"transition",2.54,196.97],
+  [80,"Hg",12,6,"transition",2.00,200.59],
+  [81,"Tl",13,6,"post",1.62,204.38],
+  [82,"Pb",14,6,"post",2.33,207.2],
+  [83,"Bi",15,6,"post",2.02,208.98],
+  [84,"Po",16,6,"post",2.00,209],
+  [85,"At",17,6,"halogen",2.20,210],
+  [86,"Rn",18,6,"noble",0,222],
+  [87,"Fr",1,7,"alkali",0.70,223],
+  [88,"Ra",2,7,"alkaline",0.90,226],
+  [89,"Ac",3,7,"actinide",1.10,227],
+  [90,"Th",4,7,"actinide",1.30,232.04],
+  [91,"Pa",5,7,"actinide",1.50,231.04],
+  [92,"U",6,7,"actinide",1.38,238.03],
+  [93,"Np",7,7,"actinide",1.36,237],
+  [94,"Pu",8,7,"actinide",1.28,244],
+  [95,"Am",9,7,"actinide",1.13,243],
+  [96,"Cm",10,7,"actinide",1.28,247],
+  [97,"Bk",11,7,"actinide",1.30,247],
+  [98,"Cf",12,7,"actinide",1.30,251],
+  [99,"Es",13,7,"actinide",1.30,252],
+  [100,"Fm",14,7,"actinide",1.30,257],
+  [101,"Md",15,7,"actinide",1.30,258],
+  [102,"No",16,7,"actinide",1.30,259],
+  [103,"Lr",17,7,"actinide",1.30,266],
+  [104,"Rf",4,7,"transition",0,267],
+  [105,"Db",5,7,"transition",0,268],
+  [106,"Sg",6,7,"transition",0,269],
+  [107,"Bh",7,7,"transition",0,270],
+  [108,"Hs",8,7,"transition",0,277],
+  [109,"Mt",9,7,"transition",0,278],
+  [110,"Ds",10,7,"transition",0,281],
+  [111,"Rg",11,7,"transition",0,282],
+  [112,"Cn",12,7,"transition",0,285],
+  [113,"Nh",13,7,"post",0,286],
+  [114,"Fl",14,7,"post",0,289],
+  [115,"Mc",15,7,"post",0,290],
+  [116,"Lv",16,7,"post",0,293],
+  [117,"Ts",17,7,"halogen",0,294],
+  [118,"Og",18,7,"noble",0,294]
+].map(x=>({
+  number:x[0],
+  symbol:x[1],
+  group:x[2],
+  period:x[3],
+  category:x[4],
+  electronegativity:x[5],
+  mass:x[6],
+  name:PT_NAMES[x[1]] || x[1]
+}));
+
+const bySymbol = Object.fromEntries(ELEMENTS.map(e=>[e.symbol,e]));
+
+/* =========================================================
+   CATEGORIAS
+========================================================= */
+
+const CATEGORY_NAMES = {
+  alkali:"Metal alcalino",
+  alkaline:"Metal alcalino-terroso",
+  transition:"Metal de transição",
+  post:"Metal pós-transição",
+  metalloid:"Semimetal",
+  nonmetal:"Não metal",
+  halogen:"Halogênio",
+  noble:"Gás nobre",
+  lanthanide:"Lantanídeo",
+  actinide:"Actinídeo",
+  unknown:"Desconhecido"
+};
+
+function categoryName(c){
+  return CATEGORY_NAMES[c] || CATEGORY_NAMES.unknown;
+}
+
+/* =========================================================
+   ESTADO
+========================================================= */
+
+let selected = {};
+let currentElement = null;
+let currentTab = "element";
+let currentAnalysis = null;
+
+/* =========================================================
+   ELEMENTOS ESPECIAIS DO BLOCO F
+========================================================= */
+
+const lanthanides = [
+  "La","Ce","Pr","Nd","Pm","Sm","Eu",
+  "Gd","Tb","Dy","Ho","Er","Tm","Yb","Lu"
+];
+
+const actinides = [
+  "Ac","Th","Pa","U","Np","Pu","Am",
+  "Cm","Bk","Cf","Es","Fm","Md","No","Lr"
+];
+
+/* =========================================================
+   TABELA
+========================================================= */
+
+function createElementButton(e){
+  const btn = document.createElement("button");
+  btn.className = `element cat-${e.category}`;
+  btn.dataset.symbol = e.symbol;
+  btn.dataset.number = e.number;
+
+  btn.innerHTML = `
+    <span class="number">${e.number}</span>
+    <span class="symbol">${e.symbol}</span>
+    <span class="name">${e.name}</span>
+    <span class="qty"></span>
+  `;
+
+  btn.addEventListener("click",()=>{
+    addElement(e.symbol);
+    showElement(e);
+  });
+
+  return btn;
+}
+
+function buildPeriodicTable(){
+  const table = document.getElementById("periodic");
+  table.innerHTML = "";
+
+  /*
+    Períodos 1-7.
+    Lantanídeos e actinídeos são retirados da posição principal
+    e apresentados nas duas linhas inferiores.
+  */
+
+  ELEMENTS.forEach(e=>{
+    if(e.category==="lanthanide" || e.category==="actinide") return;
+
+    const btn = createElementButton(e);
+
+    btn.style.gridColumn = e.group;
+    btn.style.gridRow = e.period;
+
+    table.appendChild(btn);
+  });
+
+  // Espaços marcadores para os blocos f
+  const markerLa = document.createElement("div");
+  markerLa.className = "element cat-lanthanide";
+  markerLa.style.gridColumn = 3;
+  markerLa.style.gridRow = 6;
+  markerLa.innerHTML = `<span class="symbol">57–71</span><span class="name">Lantanídeos</span>`;
+  table.appendChild(markerLa);
+
+  const markerAc = document.createElement("div");
+  markerAc.className = "element cat-actinide";
+  markerAc.style.gridColumn = 3;
+  markerAc.style.gridRow = 7;
+  markerAc.innerHTML = `<span class="symbol">89–103</span><span class="name">Actinídeos</span>`;
+  table.appendChild(markerAc);
+
+  lanthanides.forEach((s,i)=>{
+    const e = bySymbol[s];
+    const btn = createElementButton(e);
+    btn.style.gridColumn = 4+i;
+    btn.style.gridRow = 9;
+    table.appendChild(btn);
+  });
+
+  actinides.forEach((s,i)=>{
+    const e = bySymbol[s];
+    const btn = createElementButton(e);
+    btn.style.gridColumn = 4+i;
+    btn.style.gridRow = 10;
+    table.appendChild(btn);
+  });
+
+  updateTableState();
+}
+
+/* =========================================================
+   FILTROS
+========================================================= */
+
+function updateTableState(){
+  const query = document.getElementById("search").value
+    .trim()
+    .toLowerCase();
+
+  const filter = document.getElementById("filter").value;
+
+  document.querySelectorAll(".element[data-symbol]").forEach(btn=>{
+    const e = bySymbol[btn.dataset.symbol];
+
+    const text =
+      `${e.name} ${e.symbol} ${e.number}`.toLowerCase();
+
+    const searchOk = !query || text.includes(query);
+
+    let filterOk = true;
+
+    if(filter==="metal"){
+      filterOk = [
+        "alkali",
+        "alkaline",
+        "transition",
+        "post"
+      ].includes(e.category);
+    }
+
+    if(filter==="nonmetal"){
+      filterOk = [
+        "nonmetal",
+        "metalloid",
+        "halogen"
+      ].includes(e.category);
+    }
+
+    if(filter==="noble"){
+      filterOk = e.category==="noble";
+    }
+
+    if(filter==="halogen"){
+      filterOk = e.category==="halogen";
+    }
+
+    btn.classList.toggle("dim",!(searchOk && filterOk));
+
+    const qty = selected[e.symbol] || 0;
+    btn.classList.toggle("selected",qty>0);
+
+    const q = btn.querySelector(".qty");
+    if(q) q.textContent = qty>0 ? qty : "";
+  });
+}
+
+/* =========================================================
+   LABORATÓRIO
+========================================================= */
+
+function addElement(symbol){
+  selected[symbol] = (selected[symbol] || 0) + 1;
+  updateTableState();
+
+  if(currentTab==="lab" || currentTab==="analysis"){
+    renderCurrentTab();
+  }
+}
+
+function changeQuantity(symbol,delta){
+  selected[symbol] = Math.max(
+    0,
+    (selected[symbol] || 0) + delta
+  );
+
+  if(selected[symbol]===0){
+    delete selected[symbol];
+  }
+
+  updateTableState();
+  renderCurrentTab();
+}
+
+function clearLab(){
+  selected = {};
+  updateTableState();
+  renderCurrentTab();
+}
+
+/* =========================================================
+   FÓRMULA
+========================================================= */
+
+function getFormulaParts(){
+  return Object.entries(selected)
+    .map(([symbol,count])=>({
+      symbol,
+      count,
+      element:bySymbol[symbol]
+    }))
+    .sort((a,b)=>a.element.number-b.element.number);
+}
+
+function subscript(n){
+  if(n===1) return "";
+  const map={
+    0:"₀",1:"₁",2:"₂",3:"₃",4:"₄",
+    5:"₅",6:"₆",7:"₇",8:"₈",9:"₉"
+  };
+  return String(n)
+    .split("")
+    .map(x=>map[x]||x)
+    .join("");
+}
+
+function formulaHTML(parts=getFormulaParts()){
+  if(!parts.length) return "—";
+
+  return parts
+    .map(p=>`${p.symbol}${subscript(p.count)}`)
+    .join("");
+}
+
+/* =========================================================
+   NOMES QUÍMICOS
+========================================================= */
+
+const KNOWN_COMPOUNDS = {
+  "H2O":{
+    name:"Água",
+    type:"Substância molecular"
+  },
+  "H2O2":{
+    name:"Peróxido de hidrogênio",
+    type:"Substância molecular"
+  },
+  "CO2":{
+    name:"Dióxido de carbono",
+    type:"Óxido molecular"
+  },
+  "CO":{
+    name:"Monóxido de carbono",
+    type:"Óxido molecular"
+  },
+  "SO2":{
+    name:"Dióxido de enxofre",
+    type:"Óxido molecular"
+  },
+  "SO3":{
+    name:"Trióxido de enxofre",
+    type:"Óxido molecular"
+  },
+  "NH3":{
+    name:"Amônia",
+    type:"Base molecular"
+  },
+  "CH4":{
+    name:"Metano",
+    type:"Hidrocarboneto"
+  },
+  "C2H6":{
+    name:"Etano",
+    type:"Hidrocarboneto"
+  },
+  "C2H4":{
+    name:"Eteno",
+    type:"Hidrocarboneto"
+  },
+  "C2H2":{
+    name:"Etino",
+    type:"Hidrocarboneto"
+  },
+  "NaCl":{
+    name:"Cloreto de sódio",
+    type:"Sal iônico"
+  },
+  "KCl":{
+    name:"Cloreto de potássio",
+    type:"Sal iônico"
+  },
+  "LiCl":{
+    name:"Cloreto de lítio",
+    type:"Sal iônico"
+  },
+  "CaCl2":{
+    name:"Cloreto de cálcio",
+    type:"Sal iônico"
+  },
+  "MgCl2":{
+    name:"Cloreto de magnésio",
+    type:"Sal iônico"
+  },
+  "AlCl3":{
+    name:"Cloreto de alumínio",
+    type:"Sal"
+  },
+  "FeCl2":{
+    name:"Cloreto de ferro(II)",
+    type:"Sal"
+  },
+  "FeCl3":{
+    name:"Cloreto de ferro(III)",
+    type:"Sal"
+  },
+  "CuCl2":{
+    name:"Cloreto de cobre(II)",
+    type:"Sal"
+  },
+  "NaOH":{
+    name:"Hidróxido de sódio",
+    type:"Base"
+  },
+  "KOH":{
+    name:"Hidróxido de potássio",
+    type:"Base"
+  },
+  "CaOH2":{
+    name:"Hidróxido de cálcio",
+    type:"Base"
+  },
+  "MgOH2":{
+    name:"Hidróxido de magnésio",
+    type:"Base"
+  },
+  "HCl":{
+    name:"Ácido clorídrico",
+    type:"Ácido"
+  },
+  "HBr":{
+    name:"Ácido bromídrico",
+    type:"Ácido"
+  },
+  "HI":{
+    name:"Ácido iodídrico",
+    type:"Ácido"
+  },
+  "HF":{
+    name:"Ácido fluorídrico",
+    type:"Ácido"
+  },
+  "H2SO4":{
+    name:"Ácido sulfúrico",
+    type:"Ácido"
+  },
+  "H2SO3":{
+    name:"Ácido sulfuroso",
+    type:"Ácido"
+  },
+  "HNO3":{
+    name:"Ácido nítrico",
+    type:"Ácido"
+  },
+  "HNO2":{
+    name:"Ácido nitroso",
+    type:"Ácido"
+  },
+  "H3PO4":{
+    name:"Ácido fosfórico",
+    type:"Ácido"
+  },
+  "H2CO3":{
+    name:"Ácido carbônico",
+    type:"Ácido"
+  },
+  "Na2SO4":{
+    name:"Sulfato de sódio",
+    type:"Sal"
+  },
+  "Na2CO3":{
+    name:"Carbonato de sódio",
+    type:"Sal"
+  },
+  "CaCO3":{
+    name:"Carbonato de cálcio",
+    type:"Sal"
+  },
+  "NaHCO3":{
+    name:"Bicarbonato de sódio",
+    type:"Sal"
+  },
+  "KMnO4":{
+    name:"Permanganato de potássio",
+    type:"Sal"
+  },
+  "KNO3":{
+    name:"Nitrato de potássio",
+    type:"Sal"
+  },
+  "AgNO3":{
+    name:"Nitrato de prata",
+    type:"Sal"
+  },
+  "CuSO4":{
+    name:"Sulfato de cobre(II)",
+    type:"Sal"
+  },
+  "MgO":{
+    name:"Óxido de magnésio",
+    type:"Óxido metálico"
+  },
+  "CaO":{
+    name:"Óxido de cálcio",
+    type:"Óxido metálico"
+  },
+  "Na2O":{
+    name:"Óxido de sódio",
+    type:"Óxido metálico"
+  },
+  "FeO":{
+    name:"Óxido de ferro(II)",
+    type:"Óxido metálico"
+  },
+  "Fe2O3":{
+    name:"Óxido de ferro(III)",
+    type:"Óxido metálico"
+  },
+  "CuO":{
+    name:"Óxido de cobre(II)",
+    type:"Óxido metálico"
+  },
+  "ZnO":{
+    name:"Óxido de zinco",
+    type:"Óxido metálico"
+  },
+  "SiO2":{
+    name:"Dióxido de silício",
+    type:"Óxido"
+  },
+  "NO2":{
+    name:"Dióxido de nitrogênio",
+    type:"Óxido molecular"
+  },
+  "N2O":{
+    name:"Monóxido de dinitrogênio",
+    type:"Óxido molecular"
+  },
+  "N2O5":{
+    name:"Pentóxido de dinitrogênio",
+    type:"Óxido molecular"
+  },
+  "P2O5":{
+    name:"Pentóxido de fósforo",
+    type:"Óxido molecular"
+  }
+};
+
+function canonicalFormula(){
+  return getFormulaParts()
+    .map(p=>`${p.symbol}${p.count>1?p.count:""}`)
+    .join("");
+}
+
+function getCompoundName(){
+  const formula = canonicalFormula();
+
+  if(KNOWN_COMPOUNDS[formula]){
+    return KNOWN_COMPOUNDS[formula];
+  }
+
+  return generateChemicalName(getFormulaParts());
+}
+
+function generateChemicalName(parts){
+  if(!parts.length){
+    return {
+      name:"Nenhuma substância definida",
+      type:"—"
+    };
+  }
+
+  if(parts.length===1){
+    const p=parts[0];
+
+    if(p.count===1){
+      return {
+        name:p.element.name,
+        type:"Elemento"
+      };
+    }
+
+    if(p.symbol==="O"){
+      return {
+        name:"Oxigênio molecular",
+        type:"Substância simples"
+      };
+    }
+
+    if(p.symbol==="H"){
+      return {
+        name:"Hidrogênio molecular",
+        type:"Substância simples"
+      };
+    }
+
+    return {
+      name:`Substância simples de ${p.element.name.toLowerCase()}`,
+      type:"Substância simples"
+    };
+  }
+
+  /*
+    Heurística para nomes de sais/óxidos quando a fórmula
+    ainda não está na lista de compostos conhecidos.
+  */
+
+  const hasO = parts.some(p=>p.symbol==="O");
+  const hasH = parts.some(p=>p.symbol==="H");
+  const hasMetal = parts.some(p=>[
+    "Li","Be","Na","Mg","Al","K","Ca","Sc","Ti","V","Cr",
+    "Mn","Fe","Co","Ni","Cu","Zn","Ga","Rb","Sr","Y","Zr",
+    "Nb","Mo","Tc","Ru","Rh","Pd","Ag","Cd","In","Sn","Cs",
+    "Ba","La","Ce","Pr","Nd","Pm","Sm","Eu","Gd","Tb","Dy",
+    "Ho","Er","Tm","Yb","Lu","Hf","Ta","W","Re","Os","Ir",
+    "Pt","Au","Hg","Tl","Pb","Bi","Po","Fr","Ra","Ac","Th",
+    "Pa","U","Np","Pu","Am","Cm","Bk","Cf","Es","Fm","Md",
+    "No","Lr","Rf","Db","Sg","Bh","Hs","Mt","Ds","Rg","Cn",
+    "Nh","Fl","Mc","Lv"
+  ].includes(p.symbol));
+
+  if(hasMetal && hasO && !hasH){
+    const metal = parts.find(p=>p.element.category!=="transition" || true);
+    return {
+      name:`Óxido de ${metal.element.name.toLowerCase()}`,
+      type:"Provável óxido metálico"
+    };
+  }
+
+  if(hasMetal && hasH && parts.some(p=>p.symbol==="O")){
+    const metal = parts.find(p=>p.symbol!=="H" && p.symbol!=="O");
+    if(metal){
+      return {
+        name:`Hidróxido de ${metal.element.name.toLowerCase()}`,
+        type:"Provável base"
+      };
+    }
+  }
+
+  const nonH = parts.find(p=>p.symbol!=="H" && p.symbol!=="O");
+
+  if(nonH && parts.some(p=>p.symbol==="H")){
+    const prefixes = {
+      F:"fluorídrico",
+      Cl:"clorídrico",
+      Br:"bromídrico",
+      I:"iodídrico"
+    };
+
+    if(prefixes[nonH.symbol]){
+      return {
+        name:`Ácido ${prefixes[nonH.symbol]}`,
+        type:"Provável ácido"
+      };
+    }
+  }
+
+  return {
+    name:"Composto não catalogado localmente",
+    type:"Fórmula reconhecida; nome depende da espécie química e do estado de oxidação"
+  };
+}
+
+/* =========================================================
+   MASSA MOLAR
+========================================================= */
+
+function molarMass(parts=getFormulaParts()){
+  return parts.reduce(
+    (sum,p)=>sum+p.element.mass*p.count,
+    0
+  );
+}
+
+function percentComposition(parts=getFormulaParts()){
+  const total=molarMass(parts);
+
+  return parts.map(p=>({
+    ...p,
+    percent:(p.element.mass*p.count/total)*100
+  }));
+}
+
+/* =========================================================
+   CARGAS PROVÁVEIS
+========================================================= */
+
+const COMMON_CHARGES={
+  H:"+1 / -1",
+  Li:"+1",
+  Be:"+2",
+  B:"+3",
+  C:"+4 / +2 / -4",
+  N:"-3 / +3 / +5",
+  O:"-2",
+  F:"-1",
+  Na:"+1",
+  Mg:"+2",
+  Al:"+3",
+  Si:"+4 / -4",
+  P:"-3 / +3 / +5",
+  S:"-2 / +4 / +6",
+  Cl:"-1 / +1 / +3 / +5 / +7",
+  K:"+1",
+  Ca:"+2",
+  Sc:"+3",
+  Ti:"+2 / +3 / +4",
+  V:"+2 / +3 / +4 / +5",
+  Cr:"+2 / +3 / +6",
+  Mn:"+2 / +4 / +7",
+  Fe:"+2 / +3",
+  Co:"+2 / +3",
+  Ni:"+2 / +3",
+  Cu:"+1 / +2",
+  Zn:"+2",
+  Ga:"+3",
+  Ge:"+2 / +4",
+  As:"-3 / +3 / +5",
+  Se:"-2 / +4 / +6",
+  Br:"-1 / +1 / +3 / +5 / +7",
+  Rb:"+1",
+  Sr:"+2",
+  Y:"+3",
+  Zr:"+4",
+  Nb:"+3 / +5",
+  Mo:"+4 / +6",
+  Ag:"+1",
+  Cd:"+2",
+  In:"+1 / +3",
+  Sn:"+2 / +4",
+  Sb:"-3 / +3 / +5",
+  Te:"-2 / +4 / +6",
+  I:"-1 / +1 / +3 / +5 / +7",
+  Cs:"+1",
+  Ba:"+2",
+  La:"+3",
+  Ce:"+3 / +4",
+  Pr:"+3 / +4",
+  Nd:"+3",
+  Sm:"+2 / +3",
+  Eu:"+2 / +3",
+  Gd:"+3",
+  Tb:"+3 / +4",
+  Dy:"+3",
+  Ho:"+3",
+  Er:"+3",
+  Tm:"+2 / +3",
+  Yb:"+2 / +3",
+  Lu:"+3",
+  Hf:"+4",
+  Ta:"+5",
+  W:"+4 / +6",
+  Re:"+4 / +6 / +7",
+  Os:"+4 / +8",
+  Ir:"+3 / +4",
+  Pt:"+2 / +4",
+  Au:"+1 / +3",
+  Hg:"+1 / +2",
+  Tl:"+1 / +3",
+  Pb:"+2 / +4",
+  Bi:"+3 / +5",
+  Po:"+2 / +4",
+  At:"-1 / +1",
+  Fr:"+1",
+  Ra:"+2",
+  Ac:"+3",
+  Th:"+4",
+  Pa:"+4 / +5",
+  U:"+3 / +4 / +5 / +6",
+  Np:"+3 / +4 / +5 / +6",
+  Pu:"+3 / +4 / +5 / +6",
+  Am:"+3 / +4 / +5 / +6",
+  Cm:"+3",
+  Bk:"+3 / +4",
+  Cf:"+3",
+  Es:"+3",
+  Fm:"+3",
+  Md:"+2 / +3",
+  No:"+2 / +3",
+  Lr:"+3"
+};
+
+/* =========================================================
+   ANÁLISE QUÍMICA
+========================================================= */
+
+function analyzeFormula(){
+  const parts=getFormulaParts();
+
+  if(!parts.length){
+    return {
+      title:"Nenhuma combinação",
+      html:"Adicione dois ou mais elementos ao laboratório para analisar uma possível combinação."
+    };
+  }
+
+  const formula=canonicalFormula();
+  const compound=getCompoundName();
+
+  if(parts.length===1){
+    return {
+      title:"Substância simples",
+      html:`
+        <p>
+          A seleção contém apenas <strong>${parts[0].element.name}</strong>.
+        </p>
+        <p>
+          Fórmula: <strong class="mono">${formula}</strong>
+        </p>
+        <p>
+          Trata-se de uma substância formada por um único elemento.
+        </p>
+      `
+    };
+  }
+
+  const metals=parts.filter(p=>[
+    "alkali",
+    "alkaline",
+    "transition",
+    "post",
+    "lanthanide",
+    "actinide"
+  ].includes(p.element.category));
+
+  const nonmetals=parts.filter(p=>[
+    "nonmetal",
+    "halogen",
+    "noble"
+  ].includes(p.element.category));
+
+  const noble=parts.filter(p=>p.element.category==="noble");
+
+  const en=parts
+    .map(p=>p.element.electronegativity)
+    .filter(x=>x>0);
+
+  const maxEN=en.length?Math.max(...en):0;
+  const minEN=en.length?Math.min(...en):0;
+  const delta=maxEN-minEN;
+
+  let bond="Covalente";
+  let explanation="Os elementos tendem a compartilhar elétrons.";
+
+  if(noble.length){
+    bond="Pouco provável";
+    explanation="A presença de um gás nobre torna a formação de um composto comum pouco provável.";
+  }else if(metals.length && nonmetals.length){
+    bond="Provavelmente iônica";
+    explanation="A combinação entre metal e não metal frequentemente envolve transferência de elétrons e formação de íons.";
+  }else if(metals.length===parts.length){
+    bond="Metálica / liga";
+    explanation="Uma combinação exclusivamente metálica tende a formar uma liga ou solução sólida, dependendo das condições.";
+  }else if(delta>=1.7){
+    bond="Fortemente polar / possível caráter iônico";
+    explanation="A diferença de eletronegatividade é elevada.";
+  }else if(delta>=0.4){
+    bond="Covalente polar";
+    explanation="Existe diferença significativa de eletronegatividade entre os átomos.";
+  }else{
+    bond="Covalente apolar ou pouco polar";
+    explanation="As eletronegatividades são próximas.";
+  }
+
+  return {
+    title:"Análise da combinação",
+    html:`
+      <div class="section">
+        <div class="section-title">Identificação</div>
+
+        <div class="formula-box">${formula}</div>
+
+        <div class="chemical-name">
+          <span class="small">Nome químico</span>
+          <strong>${compound.name}</strong>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Tipo provável de ligação</div>
+        <p class="result">
+          <strong>${bond}</strong>
+        </p>
+        <p class="result">${explanation}</p>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Diferença de eletronegatividade</div>
+        <p class="result">
+          ΔEN ≈ <strong>${delta.toFixed(2)}</strong>
+        </p>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Cargas/estados de oxidação comuns</div>
+        ${parts.map(p=>`
+          <p class="result">
+            <strong>${p.element.name}</strong> (${p.symbol}):
+            ${COMMON_CHARGES[p.symbol] || "variável / depende do composto"}
+          </p>
+        `).join("")}
+      </div>
+
+      <div class="section">
+        <div class="section-title">Observação</div>
+        <p class="result">
+          Esta análise é uma previsão educacional. A existência e estabilidade
+          real de uma substância dependem de condições como temperatura,
+          pressão, meio, estado de oxidação e estrutura eletrônica.
+        </p>
+      </div>
+    `
+  };
+}
+
+/* =========================================================
+   LEWIS SIMPLIFICADO
+========================================================= */
+
+function valenceElectrons(symbol){
+  const groups={
+    H:1,Li:1,Na:1,K:1,Rb:1,Cs:1,Fr:1,
+    Be:2,Mg:2,Ca:2,Sr:2,Ba:2,Ra:2,
+    B:3,Al:3,Ga:3,In:3,Tl:3,
+    C:4,Si:4,Ge:4,Sn:4,Pb:4,
+    N:5,P:5,As:5,Sb:5,Bi:5,
+    O:6,S:6,Se:6,Te:6,Po:6,
+    F:7,Cl:7,Br:7,I:7,At:7,
+    He:2,Ne:8,Ar:8,Kr:8,Xe:8,Rn:8
+  };
+
+  return groups[symbol] || 0;
+}
+
+function renderLewis(){
+  const parts=getFormulaParts();
+
+  if(!parts.length){
+    return `<div class="empty">Adicione elementos para visualizar uma representação simplificada.</div>`;
+  }
+
+  return `
+    <div class="section">
+      <div class="section-title">Representação eletrônica simplificada</div>
+
+      <div class="lewis">
+        ${parts.map(p=>{
+          const electrons=valenceElectrons(p.symbol);
+
+          return `
+            <div class="lewis-atom" title="${p.element.name}">
+              <span>${p.symbol}</span>
+              ${electrons>=1?'<i class="electron e-top">•</i>':""}
+              ${electrons>=2?'<i class="electron e-right">•</i>':""}
+              ${electrons>=3?'<i class="electron e-bottom">•</i>':""}
+              ${electrons>=4?'<i class="electron e-left">•</i>':""}
+            </div>
+          `;
+        }).join("")}
+      </div>
+
+      <p class="result">
+        Esta visualização mostra apenas uma aproximação dos elétrons de
+        valência e não representa a geometria molecular completa.
+      </p>
+    </div>
+  `;
+}
+
+/* =========================================================
+   RENDER ABA ELEMENTO
+========================================================= */
+
+function renderElementTab(){
+  if(!currentElement){
+    return `
+      <div class="empty">
+        <div class="empty-icon">⚛</div>
+        <strong>Selecione um elemento</strong>
+        <span>Clique em qualquer elemento da tabela para adicioná-lo ao laboratório e visualizar seus dados.</span>
+      </div>
+    `;
+  }
+
+  const e=currentElement;
+
+  return `
+    <div class="section">
+      <div class="element-header">
+        <div class="big-symbol">${e.symbol}</div>
+
+        <div class="element-title">
+          <h2>${e.name}</h2>
+          <p>Elemento químico nº ${e.number}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Informações básicas</div>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="label">Símbolo</div>
+          <div class="value">${e.symbol}</div>
+        </div>
+
+        <div class="info-item">
+          <div class="label">Número atômico</div>
+          <div class="value">${e.number}</div>
+        </div>
+
+        <div class="info-item">
+          <div class="label">Massa atômica</div>
+          <div class="value">${e.mass}</div>
+        </div>
+
+        <div class="info-item">
+          <div class="label">Categoria</div>
+          <div class="value">${categoryName(e.category)}</div>
+        </div>
+
+        <div class="info-item">
+          <div class="label">Período</div>
+          <div class="value">${e.period}</div>
+        </div>
+
+        <div class="info-item">
+          <div class="label">Grupo</div>
+          <div class="value">${e.group}</div>
+        </div>
+
+        <div class="info-item">
+          <div class="label">Eletronegatividade</div>
+          <div class="value">
+            ${e.electronegativity ? e.electronegativity : "Não definida"}
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="label">Cargas comuns</div>
+          <div class="value">
+            ${COMMON_CHARGES[e.symbol] || "Variável"}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Laboratório</div>
+
+      <p class="result">
+        <strong>${e.symbol}</strong> — ${e.name}
+      </p>
+
+      <p class="result">
+        Quantidade atualmente selecionada:
+        <strong>${selected[e.symbol] || 0}</strong>
+      </p>
+
+      <p class="result">
+        O elemento é adicionado automaticamente ao laboratório ao ser
+        selecionado na tabela.
+      </p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Possíveis combinações</div>
+
+      <p class="result">
+        ${e.name} pode apresentar diferentes tipos de ligação dependendo
+        do elemento parceiro e das condições da reação.
+      </p>
+
+      <p class="result">
+        Eletronegatividade:
+        <strong>${e.electronegativity || "—"}</strong>
+      </p>
+    </div>
+  `;
+}
+
+/* =========================================================
+   RENDER LABORATÓRIO
+========================================================= */
+
+function renderLabTab(){
+  const parts=getFormulaParts();
+
+  if(!parts.length){
+    return `
+      <div class="empty">
+        <div class="empty-icon">⚗</div>
+        <strong>Laboratório vazio</strong>
+        <span>Clique nos elementos da tabela para adicioná-los.</span>
+      </div>
+    `;
+  }
+
+  const formula=canonicalFormula();
+  const compound=getCompoundName();
+  const mass=molarMass(parts);
+
+  return `
+    <div class="section">
+      <div class="section-title">Elementos selecionados</div>
+
+      <div class="lab-list">
+        ${parts.map(p=>`
+          <div class="lab-row">
+            <div class="lab-symbol">${p.symbol}</div>
+
+            <div class="lab-info">
+              <strong>${p.element.name}</strong>
+              <span>${categoryName(p.element.category)}</span>
+            </div>
+
+            <div class="qty-control">
+              <button onclick="changeQuantity('${p.symbol}',-1)">−</button>
+              <output>${p.count}</output>
+              <button onclick="changeQuantity('${p.symbol}',1)">+</button>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Fórmula encontrada</div>
+
+      <div class="formula-box">
+        ${formula}
+      </div>
+
+      <div class="chemical-name">
+        <span class="small">Nome da substância</span>
+        <strong>${compound.name}</strong>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Massa molar</div>
+
+      <p class="result">
+        <strong>${mass.toFixed(3)} g/mol</strong>
+      </p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Composição percentual</div>
+
+      ${percentComposition(parts).map(p=>`
+        <p class="result">
+          <strong>${p.element.name}</strong>:
+          ${p.percent.toFixed(2)}%
+        </p>
+      `).join("")}
+    </div>
+
+    <div class="section">
+      <div class="section-title">Representação</div>
+
+      ${renderLewis()}
+    </div>
+
+    <div class="section">
+      <div class="action-row">
+        <button class="action primary" onclick="runAnalysis()">
+          ⚗ Analisar combinação
+        </button>
+
+        <button class="action" onclick="lookupPubChem()">
+          🔎 Consultar PubChem
+        </button>
+
+        <button class="action" onclick="clearLab()">
+          🗑 Limpar
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+/* =========================================================
+   ABA ANÁLISE
+========================================================= */
+
+function renderAnalysisTab(){
+  if(!currentAnalysis){
+    return `
+      <div class="empty">
+        <div class="empty-icon">🔬</div>
+        <strong>Nenhuma análise realizada</strong>
+        <span>Monte uma fórmula no laboratório e pressione "Analisar combinação".</span>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="section">
+      <div class="section-title">${currentAnalysis.title}</div>
+      <div class="result">
+        ${currentAnalysis.html}
+      </div>
+    </div>
+  `;
+}
+
+function runAnalysis(){
+  currentAnalysis=analyzeFormula();
+  currentTab="analysis";
+
+  document.querySelectorAll(".tab").forEach(t=>{
+    t.classList.toggle(
+      "active",
+      t.dataset.tab==="analysis"
+    );
+  });
+
+  renderCurrentTab();
+}
+
+/* =========================================================
+   DESAFIOS
+========================================================= */
+
+const CHALLENGES=[
+  {
+    formula:"H2O",
+    name:"Água",
+    hint:"O composto mais conhecido formado por hidrogênio e oxigênio."
+  },
+  {
+    formula:"NaCl",
+    name:"Cloreto de sódio",
+    hint:"Um sal formado por um metal alcalino e um halogênio."
+  },
+  {
+    formula:"CaCl2",
+    name:"Cloreto de cálcio",
+    hint:"Um cátion de cálcio para cada dois cloretos."
+  },
+  {
+    formula:"H2SO4",
+    name:"Ácido sulfúrico",
+    hint:"Ácido formado por hidrogênio, enxofre e oxigênio."
+  },
+  {
+    formula:"CO2",
+    name:"Dióxido de carbono",
+    hint:"Um carbono ligado a dois oxigênios."
+  },
+  {
+    formula:"NH3",
+    name:"Amônia",
+    hint:"Um átomo de nitrogênio e três de hidrogênio."
+  },
+  {
+    formula:"CH4",
+    name:"Metano",
+    hint:"Um carbono e quatro hidrogênios."
+  },
+  {
+    formula:"MgO",
+    name:"Óxido de magnésio",
+    hint:"Óxido formado por magnésio e oxigênio."
+  }
+];
+
+function parseFormula(formula){
+  const result={};
+
+  const regex=/([A-Z][a-z]?)(\d*)/g;
+  let m;
+
+  while((m=regex.exec(formula))){
+    result[m[1]]=(result[m[1]]||0)+(Number(m[2])||1);
+  }
+
+  return result;
+}
+
+function challenge(ch){
+  selected=parseFormula(ch.formula);
+  currentElement=bySymbol[Object.keys(selected)[0]];
+  currentAnalysis=analyzeFormula();
+
+  updateTableState();
+  renderCurrentTab();
+}
+
+function renderChallengesTab(){
+  return `
+    <div class="section">
+      <div class="section-title">Desafios químicos</div>
+
+      <p class="result">
+        Escolha um desafio para carregar a fórmula automaticamente
+        no laboratório e depois investigue suas propriedades.
+      </p>
+    </div>
+
+    ${CHALLENGES.map(ch=>`
+      <div class="challenge">
+        <div class="challenge-head">
+          <strong>${ch.formula}</strong>
+          <small>${ch.name}</small>
+        </div>
+
+        <p class="result">${ch.hint}</p>
+
+        <button onclick='challenge(${JSON.stringify(ch)})'>
+          Montar fórmula
+        </button>
+      </div>
+    `).join("")}
+  `;
+}
+
+/* =========================================================
+   RENDER GERAL
+========================================================= */
+
+function renderCurrentTab(){
+  const content=document.getElementById("tabContent");
+
+  if(currentTab==="element"){
+    content.innerHTML=renderElementTab();
+  }
+
+  if(currentTab==="lab"){
+    content.innerHTML=renderLabTab();
+  }
+
+  if(currentTab==="analysis"){
+    content.innerHTML=renderAnalysisTab();
+  }
+
+  if(currentTab==="challenges"){
+    content.innerHTML=renderChallengesTab();
+  }
+}
+
+/* =========================================================
+   TROCA DE ABAS
+========================================================= */
+
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.addEventListener("click",()=>{
+    currentTab=tab.dataset.tab;
+
+    document.querySelectorAll(".tab").forEach(t=>{
+      t.classList.toggle(
+        "active",
+        t===tab
+      );
+    });
+
+    renderCurrentTab();
+  });
+});
+
+/* =========================================================
+   BUSCA/FILTRO
+========================================================= */
+
+document.getElementById("search")
+  .addEventListener("input",updateTableState);
+
+document.getElementById("filter")
+  .addEventListener("change",updateTableState);
+
+/* =========================================================
+   BOTÕES
+========================================================= */
+
+document.getElementById("clearBtn")
+  .addEventListener("click",clearLab);
+
+document.getElementById("randomBtn")
+  .addEventListener("click",()=>{
+    const e=ELEMENTS[
+      Math.floor(Math.random()*ELEMENTS.length)
+    ];
+
+    addElement(e.symbol);
+    currentElement=e;
+
+    currentTab="element";
+
+    document.querySelectorAll(".tab").forEach(t=>{
+      t.classList.toggle(
+        "active",
+        t.dataset.tab==="element"
+      );
+    });
+
+    renderCurrentTab();
+  });
+
+/* =========================================================
+   PUBCHEM
+========================================================= */
+
+async function lookupPubChem(){
+  const formula=canonicalFormula();
+
+  if(!formula){
+    showModal(
+      "Consulta",
+      `<p class="result">Monte uma fórmula primeiro.</p>`
+    );
+    return;
+  }
+
+  showModal(
+    "Consulta ao PubChem",
+    `<p class="result">Consultando informações para <strong>${formula}</strong>...</p>`
+  );
+
+  try{
+    const encoded=encodeURIComponent(formula);
+
+    const url=
+      `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastformula/${encoded}/property/Title,MolecularFormula,MolecularWeight,CanonicalSMILES,IsomericSMILES,InChI,InChIKey/JSON`;
+
+    const response=await fetch(url);
+
+    if(!response.ok){
+      throw new Error("Substância não encontrada.");
+    }
+
+    const data=await response.json();
+
+    const props=data?.PropertyTable?.Properties?.[0];
+
+    if(!props){
+      throw new Error("Nenhum resultado.");
+    }
+
+    showModal(
+      `PubChem — ${formula}`,
+      `
+        <div class="section">
+          <div class="section-title">Nome encontrado</div>
+          <p class="result">
+            <strong>${props.Title || "Não informado"}</strong>
+          </p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Fórmula</div>
+          <p class="result mono">
+            ${props.MolecularFormula || formula}
+          </p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Massa molecular</div>
+          <p class="result">
+            ${props.MolecularWeight || "—"}
+          </p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Canonical SMILES</div>
+          <p class="result mono">
+            ${props.CanonicalSMILES || "—"}
+          </p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Isomeric SMILES</div>
+          <p class="result mono">
+            ${props.IsomericSMILES || "—"}
+          </p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">InChI</div>
+          <p class="result mono">
+            ${props.InChI || "—"}
+          </p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">InChIKey</div>
+          <p class="result mono">
+            ${props.InChIKey || "—"}
+          </p>
+        </div>
+      `
+    );
+
+  }catch(error){
+    const local=getCompoundName();
+
+    showModal(
+      "Resultado",
+      `
+        <div class="section">
+          <div class="section-title">Fórmula analisada</div>
+
+          <div class="formula-box">${formula}</div>
+
+          <div class="chemical-name">
+            <span class="small">Nome localmente identificado</span>
+            <strong>${local.name}</strong>
+          </div>
+        </div>
+
+        <p class="result warn">
+          A consulta externa não retornou um registro específico para
+          esta fórmula.
+        </p>
+
+        <p class="result">
+          Isso não significa necessariamente que a substância não exista.
+          Algumas fórmulas dependem de representação estrutural,
+          estado de oxidação ou nomenclatura específica.
+        </p>
+      `
+    );
+  }
+}
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+function showModal(title,html){
+  document.getElementById("modalTitle").textContent=title;
+  document.getElementById("modalContent").innerHTML=html;
+  document.getElementById("modal").classList.add("show");
+}
+
+document.getElementById("modalClose")
+  .addEventListener("click",()=>{
+    document.getElementById("modal").classList.remove("show");
+  });
+
+document.getElementById("modal")
+  .addEventListener("click",e=>{
+    if(e.target.id==="modal"){
+      e.currentTarget.classList.remove("show");
+    }
+  });
+
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
+
+buildPeriodicTable();
+renderCurrentTab();
+
+/*
+  Exposição de algumas funções para os botões criados
+  dinamicamente via HTML.
+*/
+window.changeQuantity=changeQuantity;
+window.clearLab=clearLab;
+window.runAnalysis=runAnalysis;
+window.lookupPubChem=lookupPubChem;
+window.challenge=challenge;
+</script>
+
+</body>
+</html>
